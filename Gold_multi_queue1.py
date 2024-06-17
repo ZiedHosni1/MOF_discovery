@@ -43,6 +43,7 @@ from ccdc.docking import Docker
 
 CONF_FILE = 'gold.conf'
 
+
 # Default number of parallel processes to use...
 
 N_PROCESSES = 6
