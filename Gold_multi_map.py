@@ -41,7 +41,7 @@ from ccdc.docking import Docker
 
 # Default GOLD conf file to use...
 
-CONF_FILE = 'gold.conf'
+CONF_FILE = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\gold.conf"
 
 # Default number of parallel processes to use...
 
