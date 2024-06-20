@@ -41,8 +41,7 @@ from ccdc.docking import Docker
 
 # Default GOLD conf file to use...
 
-CONF_FILE = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\gold.conf"
-
+CONF_FILE = "C:\\Users\\juice\\PycharmProjects\\MOF_discovery_Zyiao_2\\gold.conf"
 
 # Default number of parallel processes to use...
 
@@ -61,17 +60,18 @@ API version:    {ccdc.__version__}
 CSD version:    {csd_version()}
 """
 
-
 ########################################################################################################################
 
-def worker(input_queue, output_queue, worker_n, conf_file):
+def worker(input_queue, output_queue, worker_n, conf_file, amino_acid_file):
+
     """
     Worker function that performs dockings.
 
-    :param input_queue: Queue of molecules to dock.
+    :param input_queue: Queue of MOFs to dock.
     :param output_queue: Queue of docked poses.
     :param worker_n: number of worker process, used for name of worker sub-directory, logging etc.
     :param conf_file: GOLD configuration file
+    :param amino_acid_file: File containing the amino acid to be docked with each MOF
 
     As we can't return a GOLD results object from a pool process (it can't be pickled as it wraps C++ objects),
     we return string representations of the docked poses.
@@ -91,8 +91,9 @@ def worker(input_queue, output_queue, worker_n, conf_file):
 
     settings.output_directory = '.'  # Ensure GOLD writes output to the worker sub-directory
 
-    # We clear the input file from the settings object as we will be using the queue for input.
-    # However, we do need to retain number of docking runs required.
+    # Clear ligand files and set the single amino acid file as the ligand
+    settings.clear_ligand_files()
+    settings.add_ligand_file(amino_acid_file)
 
     ndocks = settings.ligand_files[0].ndocks
 
@@ -100,7 +101,7 @@ def worker(input_queue, output_queue, worker_n, conf_file):
 
     settings.set_hostname(ndocks=ndocks)
 
-    # Set up an 'interactive' docker, to which molecules will be supplied from the input queue...
+    # Set up an 'interactive' docker, to which MOFs will be supplied from the input queue...
 
     docker = Docker(settings=settings)
 
@@ -110,19 +111,20 @@ def worker(input_queue, output_queue, worker_n, conf_file):
 
     print(f"Worker {worker_n}: started with GOLD PID {session.pid}.")
 
-    # Dock molecules from the input queue until the stop sentinel is encountered...
-    # Note that the index is the molecules' position in the input file, and is used in GOLD output file names (see below).
+    # Dock MOFs from the input queue until the stop sentinel is encountered...
+    # Note that the index is the MOFs' position in the input file, and is used in GOLD output file names (see below).
 
-    for index, entry_string in iter(input_queue.get, 'STOP'):
-        entry = Entry.from_string(entry_string)  # Regenerate entry from string representation
+    for index, mof_file in iter(input_queue.get, 'STOP'):
+
+        settings.receptor_files = [mof_file]  # Set the MOF as the receptor
 
         t0 = time()  # Start time
 
-        results = session.dock(entry)
+        results = session.dock()
 
         time_taken = time() - t0  # time taken
 
-        # As we the results objects are not picklable, we must return the string representations of the pose objects...
+        # As the results objects are not picklable, we must return the string representations of the pose objects...
 
         poses = [pose.to_string() for pose in results]
 
@@ -132,27 +134,19 @@ def worker(input_queue, output_queue, worker_n, conf_file):
 
     print(f"Worker {worker_n}: shutting down.")
 
-
 ########################################################################################################################
 
-def main():
+def main(conf_file, mof_files, amino_acid_file):
+
     """
-    Dock the molecules from the supplied input file in parallel.
+    Dock the MOFs from the supplied input file in parallel.
     """
 
     t0 = time()  # Script start time
 
-    parser = ArgumentParser()
-    parser.add_argument('conf_file', nargs='?', default=CONF_FILE, type=str,
-                        help=f"GOLD configuration file (default='{CONF_FILE}')")
-    parser.add_argument('--n_processes', default=N_PROCESSES, type=int,
-                        help=f"No. of processes (default={N_PROCESSES})")
-    config = parser.parse_args()
+    n_processes = N_PROCESSES
 
-    conf_file = Path(config.conf_file)
-    n_processes = config.n_processes
-
-    if not conf_file.exists():
+    if not Path(conf_file).exists():
         print(f"Error! Configuration file '{conf_file}' not found!", file=sys.stderr)
         sys.exit(1)
 
@@ -162,26 +156,13 @@ def main():
 
     print(SCRIPT_INFO)  # Useful debug info
 
-    #####
-
-    # Load setting from GOLD conf file...
+    ##### Load setting from GOLD conf file...
 
     settings = Docker.Settings().from_file(str(conf_file))
 
-    # Read the molecules to dock from the input file...
-    # Note that we can't pass molecule objects directly to the worker processes as they cannot be pickled, so we use the
-    # string representation instead. Note also that we actually use Entry objects so that any attributes are preserved.
-    # We store a molecule's index (i.e. it's position in the input file) as it is used in GOLD output file names (see below).
+    n_mofs = len(mof_files)
 
-    input_file = Path(settings.ligand_files[0].file_name)
-
-    with EntryReader(str(input_file)) as reader:
-
-        molecules = [[index, entry.to_string()] for index, entry in enumerate(reader, 1)]
-
-    n_molecules = len(molecules)
-
-    print(f"There are {n_molecules} molecules to dock on {n_processes} processes...")
+    print(f"There are {n_mofs} MOFs to dock on {n_processes} processes...")
 
     # Ensure the output directory exists (a sub-directory for each worker process is created within it)...
 
@@ -194,50 +175,45 @@ def main():
 
         mkdir(output_dir)
 
-    ######
+    ###### Create input and output queues...
 
-    # Create input and output queues...
-
-    input_queue = Queue()
+    input_queue  = Queue()
     output_queue = Queue()
 
-    # Submit the molecules for docking to the input queue...
+    # Submit the MOFs for docking to the input queue...
 
-    for molecule in molecules:
-        input_queue.put(molecule)
+    for i, mof_file in enumerate(mof_files):
+        input_queue.put((i, mof_file))
 
     # Start the worker processes and run the dockings in parallel...
 
     for worker_n in range(n_processes):
-        Process(target=worker, args=(input_queue, output_queue, worker_n, conf_file)).start()
+        Process(target=worker, args=(input_queue, output_queue, worker_n, conf_file, amino_acid_file)).start()
 
-    # Wait until we have obtained results for all molecules from the output queue...
+    # Wait until we have obtained results for all MOFs from the output queue...
 
-    results = [output_queue.get() for _ in range(n_molecules)]
+    results = [output_queue.get() for _ in range(n_mofs)]
 
     # Use the input queue to shut down the worker processes...
 
     for _ in range(n_processes):
         input_queue.put('STOP')
 
-    ######
+    ###### Write the docked poses and the 'bestranking.lst' file for each MOF to the output directory...
 
-    # Write the docked poses and the 'bestranking.lst' file for each molecule to the output directory, ...
+    bestranking, header = [], None  # Best ranking pose for each MOF and data header for the 'bestranking.lst' file
 
-    bestranking, header = [], None  # Best ranking pose for each molecule and data header for the 'bestranking.lst' file
+    for index, poses, time_taken in sorted(results, key=itemgetter(0)):  # Results are sorted on MOF index
 
-    for index, poses, time_taken in sorted(results, key=itemgetter(0)):  # Results are sorted on molecule index
-
-        best = {'score': sys.float_info.min}  # Best ranking pose for the molecule
+        best = {'score': sys.float_info.min}  # Best ranking pose for the MOF
 
         for n_pose, pose in enumerate(poses, 1):
 
             entry = Entry.from_string(pose)
 
-            file_name = output_dir / f'gold_soln_{input_file.stem}_m{index}_{n_pose}{input_file.suffix}'
+            file_name = output_dir / f'gold_soln_mof{index}_{n_pose}.mol2'
 
             with EntryWriter(str(file_name)) as writer:
-
                 writer.write(entry)
 
             # For 'bestranking.lst' file...
@@ -249,26 +225,19 @@ def main():
             if score > best['score']:
                 best['score'], best['data'], best['file_name'] = score, data, file_name
 
-            if n_pose == 1:  # When on the first pose for a molecule, record it's name and time taken for docking
-
-                best['ligand_name'], best['time'] = entry.identifier.split('|')[0], time_taken
+            if n_pose == 1:  # When on the first pose for an MOF, record its name and time taken for docking
+                best['mof_name'], best['time'] = f'mof_{index}', time_taken
 
         bestranking.append(best)  # Save record for 'bestranking.lst' file
 
     # Write 'bestranking.lst' file...
 
     with (output_dir / 'bestranking.lst').open('w') as file:
-
-        file.write(
-            "# File containing a listing of the fitness of the top-ranked\n# individual for each ligand docked in GOLD.\n#\n# Format is:\n#\n")  # Preamble
-
-        file.write(
-            f"#     {header}     time                               File name                Ligand name\n\n")  # Data header
+        file.write("# File containing a listing of the fitness of the top-ranked\n# individual for each MOF docked in GOLD.\n#\n# Format is:\n#\n")  # Preamble
+        file.write(f"#     {header}     time                               File name                MOF name\n\n")  # Data header
 
         for best in bestranking:  # Records
-
-            file.write(
-                f"""     {best['data']}   {best['time']:7.3f}  '{best["file_name"]}'         '{best["ligand_name"]}'\n""")
+            file.write(f"""     {best['data']}   {best['time']:7.3f}  '{best["file_name"]}'         '{best["mof_name"]}'\n""")
 
     # Copy over any other required files from first worker directory...
 
@@ -277,17 +246,19 @@ def main():
     for file_name in ['gold_protein.mol2']:
         cp(str(worker_dir / file_name), output_dir)
 
-    ######
-
-    # All done.
+    ###### All done.
 
     print(f"Finished in {time() - t0:.1f} seconds.")
-
 
 ########################################################################################################################
 
 if __name__ == '__main__':
-    main()
+    # Define the paths to your files
+    mof_input_files = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\3D_MOF_subset.mol2"
+    amino_acid_file = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\glycine structure.mol2"
+    conf_file = "C:\\Users\\juice\\PycharmProjects\\MOF_discovery_Zyiao_2\\gold.conf"
+
+    main(conf_file, mof_input_files, amino_acid_file)
 
 ########################################################################################################################
 # End
