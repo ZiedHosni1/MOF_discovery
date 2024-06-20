@@ -1,5 +1,0 @@
-I upload the csv document to the google drive and I think it will be much more convenient, and I don't need to transfer it to the pickle.
-
-Here is the link of my MOF_propterties document:
-
-https://drive.google.com/file/d/1ZObphXu1UuyVUNuhCC8NzB7HawmNUVUF/view?usp=drive_link
