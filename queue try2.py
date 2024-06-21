@@ -19,6 +19,7 @@
 #
 ########################################################################################################################
 
+
 import sys
 from argparse import ArgumentParser
 from platform import platform
@@ -41,7 +42,7 @@ from ccdc.docking import Docker
 
 # Default GOLD conf file to use...
 
-CONF_FILE = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\gold.conf"
+CONF_FILE = "C:\\Users\\juice\\PycharmProjects\\MOF_discovery_Zyiao_2\\gold.conf"
 
 # Default number of parallel processes to use...
 
@@ -136,7 +137,7 @@ def worker(input_queue, output_queue, worker_n, conf_file, amino_acid_file):
 
 ########################################################################################################################
 
-def main():
+def main(conf_file, mof_files, amino_acid_file):
 
     """
     Dock the MOFs from the supplied input file in parallel.
@@ -144,19 +145,9 @@ def main():
 
     t0 = time()  # Script start time
 
-    parser = ArgumentParser()
-    parser.add_argument('conf_file', nargs='?', default=CONF_FILE, type=str, help=f"GOLD configuration file (default='{CONF_FILE}')")
-    parser.add_argument('--n_processes', default=N_PROCESSES, type=int, help=f"No. of processes (default={N_PROCESSES})")
-    parser.add_argument('--mof_files', nargs='+', type=str, required=True, help= "List of MOF files to dock")
-    parser.add_argument('--amino_acid_file', type=str, required=True, help="Amino acid file")
-    config = parser.parse_args()
+    n_processes = N_PROCESSES
 
-    conf_file = Path(config.conf_file)
-    n_processes = config.n_processes
-    mof_files = config.mof_files
-    amino_acid_file = config.amino_acid_file
-
-    if not conf_file.exists():
+    if not Path(conf_file).exists():
         print(f"Error! Configuration file '{conf_file}' not found!", file=sys.stderr)
         sys.exit(1)
 
@@ -166,9 +157,7 @@ def main():
 
     print(SCRIPT_INFO)  # Useful debug info
 
-    #####
-
-    # Load setting from GOLD conf file...
+    ##### Load setting from GOLD conf file...
 
     settings = Docker.Settings().from_file(str(conf_file))
 
@@ -183,14 +172,11 @@ def main():
     if not str(output_dir) == '.':  # Skip directory (re)creation if output dir is current directory
 
         if output_dir.exists():
-
             rmtree(output_dir)
 
         mkdir(output_dir)
 
-    ######
-
-    # Create input and output queues...
+    ###### Create input and output queues...
 
     input_queue  = Queue()
     output_queue = Queue()
@@ -214,9 +200,7 @@ def main():
     for _ in range(n_processes):
         input_queue.put('STOP')
 
-    ######
-
-    # Write the docked poses and the 'bestranking.lst' file for each MOF to the output directory, ...
+    ###### Write the docked poses and the 'bestranking.lst' file for each MOF to the output directory...
 
     bestranking, header = [], None  # Best ranking pose for each MOF and data header for the 'bestranking.lst' file
 
@@ -263,16 +247,20 @@ def main():
     for file_name in ['gold_protein.mol2']:
         cp(str(worker_dir / file_name), output_dir)
 
-    ######
-
-    # All done.
+    ###### All done.
 
     print(f"Finished in {time() - t0:.1f} seconds.")
 
+########################################################################################################################
+
 if __name__ == '__main__':
-    main()
+    # Define the paths to your files
+    mof_input_files = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\MOF_subset.mol2"
+    amino_acid_file = "C:\\Users\juice\PycharmProjects\MOF_discovery_Zyiao_2\glycine structure.mol2"
+    conf_file = "C:\\Users\\juice\\PycharmProjects\\MOF_discovery_Zyiao_2\\gold.conf"
+
+    main(conf_file, mof_input_files, amino_acid_file)
 
 ########################################################################################################################
 # End
 ########################################################################################################################
-
