@@ -25,7 +25,6 @@ def packing(self, box_dimensions=((0, 0, 0), (1, 1, 1)), inclusion='CentroidIncl
         mol.add(csv.molecule(i))
     return Molecule(self.identifier, _molecule=mol)
 
-
 # Define the path to your CIF input and output files
 input_cif_file_path = 'C:\\Users\\juice\\PycharmProjects\\MOF_discovery_Zyiao_2\\packing\\FAWCEN03.cif'
 output_cif_file_path = 'packed_structure.cif'
