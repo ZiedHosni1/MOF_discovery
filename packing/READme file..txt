@@ -16,3 +16,5 @@
 # by iterating over molecules stored in a CSV-like object, adding each molecule to the mol object, and then returning a new Molecule instance that encapsulates this 3D molecular structure. 
 
 My question is about the import CCDC Library and the number 4 part (for i in range...)
+and the script is from "https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/crystal.html#Crystal.packing"
+FAWCEN03 is one input MOF cif file.
