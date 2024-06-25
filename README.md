@@ -31,7 +31,7 @@ the def function I copied from CCDC, and I think I need to import_ccdc_module('C
 #### 3.2.1 Docking scripts for local computer
 1. Original scripts about docking 1 protein with many ligands(**Gold_multi_map and Gold_multi_queue 1**), these two scripts are from CCDC Gold instruction but they are too old.
 2. **gold_multi**: the new script the CCDC support team sent to me, it has the same function as the first two scripts.
-3. I used the Chatgpt help me to modify the Gold_multi_queue1 and the new gold_multi script and try to make it possible to use these scripts to do the docking with many MOFs to one ligand, and I used the function to name these scripts you could find them in **docking** folder.
+3. I used the Chatgpt help me to modify the Gold_multi_queue1 and the new gold_multi script and try to make it possible to use these scripts to do the docking with many MOFs to one ligand, and I used the **function to name these scripts** you could find them in **docking** folder.
 4. conclusion: the input file for docking: MOF mol2 file, ligand file (some oligopeptide from my dataset), gold_conf. and the output path depends on the gold_conf??? (**I couldn't find where is it in my gold_conf so this is a problem**)
 #### 3.2.2 Docking scripts for HPC
 1. **'cluster.ini'** is used to define the settings for a docking job. This includes paths to input files, batch sizes, and SLURM-specific options such as job name, partition, and time limits.
