@@ -4,6 +4,8 @@
 ##### step 2: Then we will use the ```packing scripts``` to do the packing for all the 3D MOFs, and the results will be saved as mol2 file and will be the input file for next calculation. 
 ##### step 3: Dock the 3D MOF with some small amino acid by using Gold (since it includes a large dataset, so we will use ccdc python api). the scripts in ```docking folder``` are used for docking in local computer. and the scripts in ```Gold_Cluster_Computing``` are used for HPC. then we will get the results such as the best ranked poses, the scores (depend on the score function we use).
 ##### step 4: after the docking process, we will use ```Full interaction map scripts``` to investigate the reason for the docking and example it. we could also use Hermes to achieve this goal. And the result of this script will be a map. (the script is not ready yet)
+##### The details of every scripts are shown on the 3rd part - ```'explanation of scripts'```
+
 
 ## 2. Tutorial
 ### 2.1 Prepare the dataset
