@@ -17,7 +17,7 @@ The python version we use is 3.9.0, and the software we need is CCDC ConQuest, M
 
 ## 3. explanation of the scripts:
 ### 3.1 MOFs_extraction script
-1. Overview: The input files are the MOF_subset dataset from CCDC Dataset, it includes 125,383 MOFs. And this script could be used to extract many properties of MOFs by using csd python api, such as smiles, solubility, cell volume, density and so on. The output results will be saved as a csv.file.
+1. **Overview**: The input files are the MOF_subset dataset from CCDC Dataset, it includes 125,383 MOFs. And this script could be used to extract many properties of MOFs by using csd python api, such as smiles, solubility, cell volume, density and so on. The output results will be saved as a csv.file.
 2. ```
    def extract_mof_properties(n):
     # Initialize CSD connection and read MOF subset
@@ -33,11 +33,11 @@ this part of the script sets up the extraction of MOF properties from a database
 3. ```
    print(f"MOF properties extraction completed for {n} entries and saved to mof_properties.csv.")
    extract_mof_properties(100)
-this is an example usage about extracting properties for 100 MOF entries, if you want to extract the properties of all the MOF_subset, you could change "n" to "125383".
+this is an example usage about extracting properties for 100 MOF entries, and you could change "n" to the number of MOFs you want to extract. And if you want to extract the properties of all the MOF_subset, you could change "n" to "125383".
 ##### for more information you could download this dataset from the following link: https://drive.google.com/file/d/1ZObphXu1UuyVUNuhCC8NzB7HawmNUVUF/view?usp=drive_link.
 
 ### 3.2 Packing script: (I need your help about the packing scripts :))
-1. Overview: the input file is the 3D MOF list, and we will use the script to do the packing of them and prepare for the next docking process.
+1. **Overview**: the input file is the 3D MOF list, and we will use the script to do the packing of them and prepare for the next docking process.
 2. ```def packing(self, box_dimensions=((0, 0, 0), (1, 1, 1)), inclusion='CentroidIncluded'):``` the function of this script is to fill some multiple of the unit cell of the crystal (packing). and **'CentroidIncluded'** means where whole molecules will be included if their centroid is within the box dimensions (you could change it to 'AllAtomsIncluded' 'AnyAtomIncluded' or 'OnlyAtomsIncluded'). The **'ccdc.crystal.Crystal.packing()'** method takes two optional arguments: the size of the box to pack and an inclusion criterion. The box dimensions are a pair of triples of floats, being the near corner and far corner of the box in terms of multiples of the unit cell. the default setting of Mercury is (0, 0, 0), (1, 1, 1), and from CCDC examples, we could also change it to (-2, -2, -2), (2, 2, 2).
 3. ```csv = ChemistryLib.CrystalStructureView_instantiate(self._csv)psv = ChemistryLib.CrystalStructurePackingView(csv)``` I think it is about the ChemistryLib from CCDC, I am not quite sure about this step.
 4. ``` if psv.packable():
@@ -51,25 +51,27 @@ the def function I copied from CCDC, and I think I need to import_ccdc_module('C
 ##### and for other packing information you can check https://downloads.ccdc.cam.ac.uk/documentation/API/descriptive_docs/crystal.html#packing-and-slicing.
 ### 3.3 Docking scripts:
 #### 3.3.1 Docking scripts for local computer
-1. Original scripts about docking 1 protein with many ligands(**Gold_multi_map and Gold_multi_queue 1**), these two scripts are from CCDC Gold instruction but they are too old.
-2. **gold_multi**: the new script the CCDC support team sent to me, it has the same function as the first two scripts.
-3. I used the Chatgpt help me to modify the Gold_multi_queue1 and the new gold_multi script and try to make it possible to use these scripts to do the docking with many MOFs to one ligand, and I used the **function to name these scripts** you could find them in **docking** folder.
-4. conclusion: the input file for docking: MOF mol2 file, ligand file (some oligopeptide from my dataset), gold_conf. and the output path depends on the gold_conf??? (**I couldn't find where is it in my gold_conf so this is a problem**)
+1. **Overview**: These scripts could help to you to do the docking with MOFs and ligands for large dataset. And could be used in your local computer. for the old scripts **Gold_multi_map and Gold_multi_queue 1** and new script **gold_multi**, they are used for docking 1 MOF with many different ligands. And for the scripts **Chatgpt modified queue 1 and Chatgpt modified new gold_multi**, they could be used to dock many MOFs with 1 ligand, this could help you to choose the MOF with large volume you want.
+2. Original scripts about docking 1 protein or MOF with many ligands(**Gold_multi_map and Gold_multi_queue 1**), these two scripts are from CCDC Gold instruction but they are too old.
+3. **gold_multi**: the new script the CCDC support team sent to me, it has the same function as the first two scripts.
+4. I used the Chatgpt help me to modify the Gold_multi_queue1 and the new gold_multi script and try to make it possible to use these scripts to do the docking with many MOFs to one ligand, and I used the **function to name these scripts** you could find them in **docking** folder.
+5. conclusion: the input file for docking: MOF mol2 file, ligand file (some oligopeptide from my dataset), gold_conf. and the output path depends on the gold_conf??? (**I couldn't find where is it in my gold_conf so this is a problem**)
 #### 3.3.2 Docking scripts for HPC
-1. **'cluster.ini'** is used to define the settings for a docking job. This includes paths to input files, batch sizes, and SLURM-specific options such as job name, partition, and time limits.
-2. **'cluster_batching.py'** This script partitions ligands into regular-sized batches, bundling them with other required files into .tar.gz format. These batches are then used during the docking run.
-3. **'cluster_batching.sh'** Submit this script via Slurm to perform ligand batching on a cluster node.
-4. **'cluster_collect.py'** Generates an ordered file containing fitness scores and creates a directory with solution molfiles if requested.
-5. **'cluster_docking.py'** this script is to process batches of ligands for docking using the GOLD software, leveraging the goldhpc module.
-6. **'cluster_monitor.py'** Allows checking the status of running jobs without affecting them.
-7. **'cluster_resume.py'** Enables the job to pick up from where it left off.
-8. **'cluster_start.py'** Demonstrates the order of a full docking run and can be used as a convenience to run all necessary steps sequentially.
-9. **'cluster_status.py'** Provides detailed information about the status of all sub-jobs or a specific job ID.
-10. **'cluster_stop.py'** Allows stopping of a running job, which will automatically start the next pending job if any.
-11. **'cluster_submit.py'** Handles submission of large jobs by automatically splitting them into multiple sub-jobs if necessary.
-12. **'cluster_timing.py'** Provides information about the time taken for various stages of the job.
-13. **'goldhpc'** is a module designed to support high-performance computing (HPC) workflows for the GOLD docking software, particularly in a cluster environment.
-14. **'goldqueue_2022'** **this file is too large, and I didn't upload it to github**. And it is a Singularity image file that encapsulates the GOLD software and its dependencies. Singularity is a container platform that allows users to package applications and their dependencies into a single file (called an image), which can be easily transported and run on different environments without worrying about system compatibility issues.
+1. **Overview**: These scripts could be used for using CCDC Gold in HPC (High Performance Computing).
+2. **'cluster.ini'** is used to define the settings for a docking job. This includes paths to input files, batch sizes, and SLURM-specific options such as job name, partition, and time limits.
+3. **'cluster_batching.py'** This script partitions ligands into regular-sized batches, bundling them with other required files into .tar.gz format. These batches are then used during the docking run.
+4. **'cluster_batching.sh'** Submit this script via Slurm to perform ligand batching on a cluster node.
+5. **'cluster_collect.py'** Generates an ordered file containing fitness scores and creates a directory with solution molfiles if requested.
+6. **'cluster_docking.py'** this script is to process batches of ligands for docking using the GOLD software, leveraging the goldhpc module.
+7. **'cluster_monitor.py'** Allows checking the status of running jobs without affecting them.
+8. **'cluster_resume.py'** Enables the job to pick up from where it left off.
+9. **'cluster_start.py'** Demonstrates the order of a full docking run and can be used as a convenience to run all necessary steps sequentially.
+10. **'cluster_status.py'** Provides detailed information about the status of all sub-jobs or a specific job ID.
+11. **'cluster_stop.py'** Allows stopping of a running job, which will automatically start the next pending job if any.
+12. **'cluster_submit.py'** Handles submission of large jobs by automatically splitting them into multiple sub-jobs if necessary.
+13. **'cluster_timing.py'** Provides information about the time taken for various stages of the job.
+14. **'goldhpc'** is a module designed to support high-performance computing (HPC) workflows for the GOLD docking software, particularly in a cluster environment.
+15. **'goldqueue_2022'** **this file is too large, and I didn't upload it to github**. And it is a Singularity image file that encapsulates the GOLD software and its dependencies. Singularity is a container platform that allows users to package applications and their dependencies into a single file (called an image), which can be easily transported and run on different environments without worrying about system compatibility issues.
 
 
 
