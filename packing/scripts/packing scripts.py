@@ -1,4 +1,4 @@
-# the link of this script: https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/crystal.html#Crystal.packing
+# the link of this script: https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/crystal.html#Crystal.packing. And for each steps meaning I put them in the 3rd part of my readme file.
 import os
 from ccdc.io import CrystalReader, CrystalWriter
 from ccdc.utilities import _private_importer
