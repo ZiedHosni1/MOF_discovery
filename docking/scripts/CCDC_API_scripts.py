@@ -1,5 +1,6 @@
 # some scripts I got from CCDC API, which could be helpful for docking
-# For example, we might want to remove unnecessary waters, metals and ligands to prepare the protein for docking
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# For example, we might want to remove unnecessary waters, metals and ligands to prepare the protein for docking. The link: https://downloads.ccdc.cam.ac.uk/documentation/API/descriptive_docs/protein.html#manipulating-proteins
 for metal in p_1fax.metals:
     p_1fax.remove_metal(metal)
 
@@ -8,14 +9,14 @@ for ligand in p_1fax.ligands:
 
 p_1fax.remove_all_waters()
 p_1fax.remove_chain('L')
-
-# add all hydrogen atoms.
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# add all hydrogen atoms. The link is the same for the 1st one.
 p_3cen.add_hydrogens()
-
-# it is preferrable to have all the atoms in a given residue in a single block of atoms.
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# it is preferrable to have all the atoms in a given residue in a single block of atoms. same link.
 p_3cen.sort_atoms_by_residue()
-
-#GOLD docking in API (a list from CCDC)
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#GOLD docking in API (a list from CCDC) (may not be useful, because we will use the default setting. the link: https://downloads.ccdc.cam.ac.uk/documentation/API/modules/docking_api.html#ccdc.docking.Docker.Settings.flip_planar_nitrogen
 flip_planar_nitrogen
 flip_free_corners
 flip_amide_bonds
@@ -29,8 +30,8 @@ rotatable_bond_override_file
 fix_all_protein_rotatable_bonds
 solvate_all
 use_internal_ligand_energy_offset
-
-#proteinRotatedTorsion
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#proteinRotatedTorsion: The link: https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/docking.html#Docker.Results.DockedLigand.ProteinRotatedTorsion
 class ProteinRotatedTorsion(object):
     '''Details of a protein amino acid side chain rotated in the docking solution.'''
 
@@ -83,8 +84,8 @@ class ProteinRotatedTorsion(object):
         '''
 
         return self._type_map[self._gold_rotated_torsion.type()]
-
-# Docking results
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# Docking results including provide nicer access to the scoring terms of the docking, The torsion angle in the final pose, and so on. The link: https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/docking.html#Docker.Results
 @nested_class('Docker')
     class Results(object):
         '''Docking results.
@@ -152,8 +153,8 @@ class ProteinRotatedTorsion(object):
                     return terms[0][1]
                 else:
                     return dict(terms)
-
-#settings for the docker
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#settings for the docker the link: https://downloads.ccdc.cam.ac.uk/documentation/API/_modules/ccdc/docking.html#Docker.Settings
 @nested_class('Docker')
     class Settings(object):
         '''Settings for docker.'''
@@ -170,3 +171,4 @@ class ProteinRotatedTorsion(object):
             else:
                 file_name = value
             return file_name
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

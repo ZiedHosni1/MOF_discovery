@@ -1,4 +1,4 @@
-#the original scripts CCDC support give me, which could dock 1 MOF with many ligands, it is too old too
+#the original scripts CCDC support give me, which could dock 1 MOF with many ligands(The ccdc support told me it is too old ) the link:https://downloads.ccdc.cam.ac.uk/GOLD/HPC/gold_multiprocessing.zip It contains two script Gold_multi_queue and Gold_multi_map.
 #! /usr/bin/env python
 ########################################################################################################################
 #

@@ -1,10 +1,8 @@
-# the original scripts CCDC support give me, which could dock 1 MOF with many ligands
+# the original scripts CCDC support give me, which could dock 1 MOF with many ligands the link: https://github.com/ccdc-opensource/csd-python-api-scripts/blob/main/scripts/gold_multi/gold_multi.py
 #! /usr/bin/env python
 ########################################################################################################################
-#
 # This script can be used for any purpose without limitation subject to the
 # conditions at http://www.ccdc.cam.ac.uk/Community/Pages/Licences/v2.aspx
-#
 # This permission notice and the following statement of attribution must be
 # included in all copies or substantial portions of this script.
 #
