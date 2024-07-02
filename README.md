@@ -1,6 +1,6 @@
 # MOFDiscovery
 ## 1. Introduction
-##### step 1: In the MOFdiscovery project, we will first use ```MOFs_extraction.py``` to extract the descriptors, smiles, geometric data, and other properties of 3D MOFs (from CCDC MOF dataset), and the results will be saved as a csv file. 
+##### step 1: In the MOFdiscovery project, we will first use ```MOFs_extraction.py``` to extract the descriptors, smiles, geometric data, and other properties of 3D MOFs (from CCDC MOF dataset), and the results will be saved as a csv file. And these datas would be useful for later Machine Learning. 
 ##### step 2: Then we will use the ```packing scripts``` to do the packing for all the 3D MOFs, and the results will be saved as mol2 file and will be the input file for next calculation. 
 ##### step 3: Dock the 3D MOF with some small amino acid by using Gold (since it includes a large dataset, so we will use ccdc python api). the scripts in ```docking folder``` are used for docking in local computer. and the scripts in ```Gold_Cluster_Computing``` are used for HPC. then we will get the results such as the best ranked poses, the scores (depend on the score function we use).
 ##### step 4: after the docking process, we will use ```Full interaction map scripts``` to investigate the reason for the docking and example it. we could also use Hermes to achieve this goal. And the result of this script will be a map. (the script is not ready yet)
